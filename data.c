@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+# ifndef TUPLES
+# define TUPLES
 typedef struct Tuple {
   unsigned long long int key;
   unsigned long long int value;
@@ -55,6 +57,7 @@ TupleArray *read_tuples(char *filename) {
 
   return ta;
 }
+# endif
 
 int main(int argc, char **argv) {
   if (argc < 3) {
