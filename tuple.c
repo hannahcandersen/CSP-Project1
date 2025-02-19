@@ -24,10 +24,6 @@ int main(int argc, char **argv) {
 
   printf("Tuples generated\n");
 
-  for (int i = 0; i < n_tuples; i++) {
-    printf("Key: %llu, Value: %llu\n", tuples[i].key, tuples[i].value);
-  }
-
   FILE *file = fopen(filename, "w");
   if (file == NULL) {
     printf("Failed to open file\n");
@@ -46,15 +42,6 @@ int main(int argc, char **argv) {
 
   fclose(file);
   free(tuples);
-
-  TupleArray *ta = read_tuples(filename);
-
-  for (size_t i = 0; i < ta->size; i++) {
-    printf("Key: %llu, Value: %llu\n", ta->tuples[i].key, ta->tuples[i].value);
-  }
-
-  free(ta->tuples);
-  free(ta);
 
   return 0;
 }
