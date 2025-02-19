@@ -1,48 +1,41 @@
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "tuple.h"
 
-int main(int argc, char **argv) {
-  if (argc < 3) {
-    printf("Must take 2 parameters (#tuples and filename to save to)\n");
-    return 1;
-  }
+unsigned long long int rand_long() {
+  return rand() | (unsigned long long int)rand() << 32;
+}
 
-  unsigned int n_tuples = atoi(argv[1]);
-  char *filename = argv[2];
+Tuple rand_tuple() {
+  Tuple t = {rand_long(), rand_long()};
+  return t;
+}
 
-  printf("Generate %d tuples\n", n_tuples);
-  printf("Write tuples to file: %s\n", filename);
+Tuple *read_tuples(char *filename, size_t *size) {
+  FILE *file = fopen(filename, "r");
 
-  Tuple *tuples = malloc(n_tuples * sizeof(Tuple));
-
-  printf("Memomry allocated\n");
-
-  for (int i = 0; i < n_tuples; i++) {
-    tuples[i] = rand_tuple();
-  }
-
-  printf("Tuples generated\n");
-
-  FILE *file = fopen(filename, "w");
   if (file == NULL) {
-    printf("Failed to open file\n");
-    return 1;
+    printf("Couldn't open file\n");
+    return NULL;
   }
 
-  printf("File opened\n");
-
-  fprintf(file, "%u\n", n_tuples);
-
-  for (int i = 0; i < n_tuples; i++) {
-    fprintf(file, "%llu,%llu\n", tuples[i].key, tuples[i].value);
+  if (fscanf(file, "%zu\n", size) != 1) {
+    printf("Couldn't parse size from file\n");
+    return NULL;
   }
 
-  printf("Tuples written to file\n");
+  Tuple *tuples = (Tuple *)malloc(*size * sizeof(Tuple));
 
-  fclose(file);
-  free(tuples);
+  unsigned long long int key;
+  unsigned long long int value;
+  for (size_t i = 0; i < *size; i++) {
+    if (fscanf(file, "%llu,%llu\n", &key, &value) != 2) {
+      printf("Couldn't parse tuple #%zu from file\n", i);
+      return NULL;
+    }
+    Tuple t = {key, value};
+    tuples[i] = t;
+  }
 
-  return 0;
+  return tuples;
 }
