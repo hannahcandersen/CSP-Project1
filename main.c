@@ -25,7 +25,6 @@ int main(int argc, char **argv) {
 
   make_buffers(partitions, n_partitions, n_tuples);
 
-  // TODO: Time
   partition(partitions, n_partitions, tuples, n_tuples, hash_bits, n_threads);
 
   for (size_t i = 0; i < n_tuples; i++) {
