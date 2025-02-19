@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-# ifndef TUPLES
-# define TUPLES
-typedef struct Tuple {
+#ifndef TUPLES
+#define TUPLES
+
+typedef struct {
   unsigned long long int key;
   unsigned long long int value;
 } Tuple;
@@ -44,4 +45,5 @@ inline Tuple *read_tuples(char *filename, size_t *size) {
 
   return tuples;
 }
-# endif
+
+#endif
