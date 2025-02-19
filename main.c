@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
   partition(partitions, n_partitions, tuples, n_tuples, hash_bits, n_threads);
 
   for (size_t i = 0; i < n_tuples; i++) {
-    printf("Key: %llu, Hash value: %zu\n", tuples[i].key, hash(&tuples[i], n_partitions));
+    printf("Key: %llu, Hash value: %zu\n", tuples[i].key, hash(&tuples[i], hash_bits));
   }
 
   return 0;
