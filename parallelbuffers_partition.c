@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "partition.h"
 
 void make_buffers(Partition *partitions, size_t n_partitions, size_t n_tuples) {
