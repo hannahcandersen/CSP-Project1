@@ -11,6 +11,7 @@ typedef struct {
   _Atomic size_t h;       // next available chunk index
   size_t *d;              // how many tuples have been written into the current chunk by thread i.
   _Atomic bool finalized; // flag indicating the buffer has entered finalization
+  _Atomic size_t current_writing_index;
 } Buffer;
 
 typedef struct {
