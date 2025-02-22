@@ -2,7 +2,7 @@
 
 #include "partition.h"
 
-void make_buffers(Partition *partitions, size_t n_partitions, size_t n_tuples) {
+void make_buffers(Partition *partitions, size_t n_partitions, size_t n_tuples, size_t n_threads) {
   for (size_t i = 0; i < n_partitions; i++) {
     Buffer *buffer = malloc(sizeof(Buffer));
 
