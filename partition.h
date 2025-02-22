@@ -18,7 +18,7 @@ typedef struct {
   size_t n_buffers;
 } Partition;
 
-void make_buffers(Partition *partitions, size_t n_partitions, size_t n_tuples);
+void make_buffers(Partition *partitions, size_t n_partitions, size_t n_tuples, size_t n_threads);
 void partition(Partition *partitions, size_t n_partitions, Tuple *tuples, size_t n_tuples, size_t hash_bits, size_t n_threads);
 
 # endif
