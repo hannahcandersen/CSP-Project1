@@ -8,7 +8,7 @@ void make_buffers(Partition *partitions, size_t n_partitions, size_t n_tuples, s
 
     buffer->size = n_tuples / n_partitions * 2;
     buffer->tuples = malloc(buffer->size * sizeof(Tuple));
-    buffer->c = 1000; // TODO: Change? Experiment with different values
+    buffer->c = 1024; // TODO: Change? Experiment with different values
     buffer->h = 0;
     buffer->d = malloc(n_threads * sizeof(size_t));
     for (size_t j = 0; j < n_threads; j++) {

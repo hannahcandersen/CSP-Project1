@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
   size_t n_partitions = pow(2.0, (double)hash_bits);
   Partition *partitions = (Partition *)malloc(n_partitions * sizeof(Partition));
 
-  make_buffers(partitions, n_partitions, n_tuples);
+  make_buffers(partitions, n_partitions, n_tuples, n_threads);
 
   partition(partitions, n_partitions, tuples, n_tuples, hash_bits, n_threads);
 
