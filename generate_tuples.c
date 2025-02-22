@@ -1,16 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "tuple.h"
 
 int main(int argc, char **argv) {
-  if (argc < 3) {
-    printf("Must take 2 parameters (#tuples and filename to save to)\n");
+  if (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)) {
+    printf("%s <filename> <#tuples>\n", argv[0]);
+    return 0;
+  }
+  else if (argc != 3) {
+    printf("Wrong parameter count!\n");
+    printf("Run with -h or --help to see how to run\n");
     return 1;
   }
 
-  unsigned int n_tuples = atoi(argv[1]);
-  char *filename = argv[2];
+  char *filename = argv[1];
+  unsigned int n_tuples = atoi(argv[2]);
 
   printf("Generate %d tuples\n", n_tuples);
   printf("Write tuples to file: %s\n", filename);

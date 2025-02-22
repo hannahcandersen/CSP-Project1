@@ -2,14 +2,20 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "hash.c"
 #include "partition.h"
 #include "tuple.h"
 
 int main(int argc, char **argv) {
-  if (argc != 4) {
-    printf("Must supply 3 parameters from\n");
+  if (argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)) {
+    printf("%s <filename> <#hash_bits> <#threads>\n", argv[0]);
+    return 0;
+  }
+  else if (argc != 4) {
+    printf("Wrong parameter count!\n");
+    printf("Run with -h or --help to see how to run\n");
     return 1;
   }
 
