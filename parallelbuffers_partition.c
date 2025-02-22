@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <pthread.h>
+#include <stdatomic.h>
 
 #include "partition.h"
 #define NO_CHUNK ((size_t)-1)
@@ -33,6 +34,62 @@ void make_buffers(Partition *partitions, size_t n_partitions, size_t n_tuples, s
   }
 }
 
+void *partition_worker(void *args)
+{
+  PartitionWorkerArgs *pwa = (PartitionWorkerArgs *)args;
+
+  size_t id = pwa->id;
+  Partition *partitions = pwa->partitions;
+  size_t n_partitions = pwa->n_partitions;
+  Tuple *tuples = pwa->tuples;
+  size_t start_of_slice = pwa->start_of_slice;
+  size_t end_of_slice = pwa->end_of_slice;
+  size_t hash_bits = pwa->hash_bits;
+
+  size_t current_chunk[n_partitions];
+  for (size_t i = 0; i < n_partitions; i++)
+  {
+    current_chunk[i] = NO_CHUNK;
+  }
+
+  // Loop through the slice of tuples
+  for (size_t i = start_of_slice; i < end_of_slice; i++)
+  {
+    Tuple *tuple = &tuples[i];
+
+    // Hash tuple to find partition and output buffer
+    size_t hash_value = hash(tuple, hash_bits);
+    size_t partition_id = hash_value;
+    Partition *partition = &partitions[partition_id];
+    Buffer *buffer = &partition->buffers[0];
+
+    // Check if chunk has been claimed for this buffer
+    if (current_chunk[partition_id] == NO_CHUNK)
+    {
+      // Claim a chunk and increment h
+      current_chunk[partition_id] = atomic_fetch_add(&buffer->h, 1);
+    }
+
+    // If no space in current chunk, claim a new chunk.
+    if (buffer->d[id] >= buffer->c)
+    {
+      current_chunk[partition_id] = atomic_fetch_add(&buffer->h, 1);
+      buffer->d[id] = 0;
+    }
+
+    // Write tuple to chunk in buffer
+    size_t offset = current_chunk[partition_id] * buffer->c + buffer->d[id];
+    buffer->tuples[offset] = *tuple;
+    buffer->d[id]++;
+
+    // TODO: If neccessary
+    // If all tuples are processed or buffer is full, set finalized to true
+    // Topup after finalization
+  }
+
+  return NULL;
+}
+
 void partition(Partition *partitions, size_t n_partitions, Tuple *tuples, size_t n_tuples, size_t hash_bits, size_t n_threads) {
 
   // TODO: Fix slices to not miss any if n_tuples is not perfectly divisible by n_threads
@@ -59,55 +116,4 @@ void partition(Partition *partitions, size_t n_partitions, Tuple *tuples, size_t
 
   free(threads);
   free(thread_args);
-}
-
-void *partition_worker(void *args) {
-  PartitionWorkerArgs *pwa = (PartitionWorkerArgs *)args;
-
-  size_t id = pwa->id;
-  Partition *partitions = pwa->partitions;
-  size_t n_partitions = pwa->n_partitions;
-  Tuple *tuples = pwa->tuples;
-  size_t start_of_slice = pwa->start_of_slice;
-  size_t end_of_slice = pwa->end_of_slice;
-  size_t hash_bits = pwa->hash_bits;
-
-  size_t current_chunk[n_partitions];
-  for (size_t i = 0; i < n_partitions; i++) {
-    current_chunk[i] = NO_CHUNK;
-  }
-
-  // Loop through the slice of tuples
-  for (size_t i = start_of_slice; i < end_of_slice; i++) {
-    Tuple *tuple = &tuples[i];
-
-    // Hash tuple to find partition and output buffer
-    size_t hash_value = hash(tuple, hash_bits);
-    size_t partition_id = hash_value;
-    Partition *partition = &partitions[partition_id];
-    Buffer *buffer = &partition->buffers[0];
-
-    // Check if chunk has been claimed for this buffer
-    if (current_chunk[partition_id] == NO_CHUNK) {
-      // Claim a chunk and increment h
-      current_chunk[partition_id] = atomic_fetch_add(&buffer->h, 1);
-    }
-
-    // If no space in current chunk, claim a new chunk.
-    if (buffer->d[id] >= buffer->c) {
-      current_chunk[partition_id] = atomic_fetch_add(&buffer->h, 1);
-      buffer->d[id] = 0;
-    }
-
-    // Write tuple to chunk in buffer
-    size_t offset = current_chunk[partition_id] * buffer->c + buffer->d[id];
-    buffer->tuples[offset] = *tuple;
-    buffer->d[id]++;
-
-    // TODO: If neccessary
-    // If all tuples are processed or buffer is full, set finalized to true
-    // Topup after finalization
-  }
-
-  return NULL;
 }
