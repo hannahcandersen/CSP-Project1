@@ -3,6 +3,7 @@
 #include <stdatomic.h>
 
 #include "partition.h"
+#include "hash.h"
 #define NO_CHUNK ((size_t)-1)
 
 typedef struct {
