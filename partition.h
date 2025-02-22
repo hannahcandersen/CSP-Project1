@@ -9,7 +9,7 @@ typedef struct {
   size_t size;
   size_t c;               // chunk size
   _Atomic size_t h;       // next available chunk index
-  size_t *d;              // per-thread occupancy counters
+  size_t *d;              // how many tuples have been written into the current chunk by thread i.
   _Atomic bool finalized; // flag indicating the buffer has entered finalization
 } Buffer;
 
