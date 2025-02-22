@@ -1,4 +1,5 @@
 #include "tuple.h"
+#include <stdbool.h>
 
 # ifndef PARTITION
 # define PARTITION
