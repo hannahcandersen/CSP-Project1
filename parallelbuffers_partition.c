@@ -48,7 +48,7 @@ void *partition_worker(void *args)
   size_t end_of_slice = pwa->end_of_slice;
   size_t hash_bits = pwa->hash_bits;
 
-  printf("Thread %zu started. Has been assigned tuples no. %zu - %zu (exclusive)\n", id, start_of_slice, end_of_slice);
+  printf("Thread %zu started. Has been assigned tuples no. %zu - %zu \n", id, start_of_slice, end_of_slice - 1);
 
   size_t *current_chunk = malloc(n_partitions * sizeof(size_t));  
   for (size_t i = 0; i < n_partitions; i++)
