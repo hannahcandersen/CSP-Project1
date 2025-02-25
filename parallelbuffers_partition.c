@@ -83,11 +83,14 @@ void *partition_worker(void *args)
     buffer->tuples[offset] = *tuple;
     buffer->d[id]++;
     printf("Thread %zu has written tuple no. %zu to partition %zu at offset %zu\n", id, i, partition_id, offset);
-
-    // TODO: If neccessary
-    // If all tuples are processed or buffer is full, set finalized to true
-    // Topup after finalization. To avoid "holes" in the output
   }
+
+  // TODO:
+  // When done
+    // If the last chunk written by the thread is not full, we should top-up using earlier data.
+    // Specifically, move records from the first occupied chunk of this thread into the last occupied chunk.
+      // Either chunk j where j is thread is
+      // Or save first chunk in variable
 
   free(current_chunk);
   return NULL;
@@ -96,6 +99,7 @@ void *partition_worker(void *args)
 void partition(Partition *partitions, size_t n_partitions, Tuple *tuples, size_t n_tuples, size_t hash_bits, size_t n_threads) {
 
   size_t slice = n_tuples / n_threads; 
+  // TODO: change to other way, see concurrent
   printf("Each thread will process %zu tuples\n", slice);
 
   pthread_t *threads = malloc(n_threads * sizeof(pthread_t));
