@@ -11,11 +11,10 @@ typedef struct {
   size_t id;
   Partition *partitions; 
   size_t n_partitions;   
-  Tuple *tuples;          // All tuples
-  size_t start_of_slice;  // Start of thread's slice of tuples
-  size_t end_of_slice;    // End of thread's slice of tuples
+  Tuple *tuples;         
+  size_t n_tuples;
   size_t hash_bits;      
-} PartitionWorkerArgs;
+} ThreadArgs;
 
 void make_buffers(Partition *partitions, size_t n_partitions, size_t n_tuples, size_t n_threads) {
   for (size_t i = 0; i < n_partitions; i++) {
@@ -29,7 +28,6 @@ void make_buffers(Partition *partitions, size_t n_partitions, size_t n_tuples, s
     for (size_t j = 0; j < n_threads; j++) {
       buffer->d[j] = 0;
     }
-    buffer->finalized = false;
 
     partitions[i].n_buffers = 1;
     partitions[i].buffers = buffer;
@@ -38,91 +36,91 @@ void make_buffers(Partition *partitions, size_t n_partitions, size_t n_tuples, s
 
 void *partition_worker(void *args)
 {
-  PartitionWorkerArgs *pwa = (PartitionWorkerArgs *)args;
+  ThreadArgs *t_args = args;
+  size_t id = t_args->id;
+  Partition *partitions = t_args->partitions;
+  size_t n_partitions = t_args->n_partitions;
+  Tuple *tuples = t_args->tuples;
+  size_t n_tuples = t_args->n_tuples;
+  size_t hash_bits = t_args->hash_bits;
 
-  size_t id = pwa->id;
-  Partition *partitions = pwa->partitions;
-  size_t n_partitions = pwa->n_partitions;
-  Tuple *tuples = pwa->tuples;
-  size_t start_of_slice = pwa->start_of_slice;
-  size_t end_of_slice = pwa->end_of_slice;
-  size_t hash_bits = pwa->hash_bits;
-
-  printf("Thread %zu started. Has been assigned tuples no. %zu - %zu \n", id, start_of_slice, end_of_slice - 1);
-
-  size_t *current_chunk = malloc(n_partitions * sizeof(size_t));  
-  for (size_t i = 0; i < n_partitions; i++)
-  {
+  size_t *current_chunk = malloc(n_partitions * sizeof(size_t)); 
+  size_t *first_chunk = malloc(n_partitions * sizeof(size_t)); 
+  for (size_t i = 0; i < n_partitions; i++) {
     current_chunk[i] = NO_CHUNK;
+    first_chunk[i] = NO_CHUNK;
   }
 
-  for (size_t i = start_of_slice; i < end_of_slice; i++)
-  {
+  /* WRITING PHASE */ 
+  for (int i = 0; i < n_tuples; i++) {
     Tuple *tuple = &tuples[i];
-    size_t hash_value = hash(tuple, hash_bits);
-    size_t partition_id = hash_value;
-    Partition *partition = &partitions[partition_id];
-    Buffer *buffer = &partition->buffers[0];
+    size_t partition = hash(tuple, hash_bits);
+    Buffer *buffer = &partitions[partition].buffers[0];
 
-    printf("Thread %zu is processing tuple %zu. Hash value: %zu. Partition: %zu\n", id, i, hash_value, partition_id);
-
-    if (current_chunk[partition_id] == NO_CHUNK)
-    {
-      printf("Thread %zu got its first chunk for partition %zu\n", id, partition_id);
-      current_chunk[partition_id] = atomic_fetch_add(&buffer->h, 1);
+    if (current_chunk[partition] == NO_CHUNK) {
+      current_chunk[partition] = atomic_fetch_add(&buffer->h, 1);
+      first_chunk[partition] = current_chunk[partition];
+      //printf("Thread %zu has claimed a new chunk %zu for partition %zu\n", id, current_chunk[partition], partition);
     }
 
-    if (buffer->d[id] >= buffer->c)
-    {
-      printf("Thread %zu has filled its chunk for partition %zu and is claiming a new one\n", id, partition_id);
-      current_chunk[partition_id] = atomic_fetch_add(&buffer->h, 1);
+    if (buffer->d[id] >= buffer->c) {
+      current_chunk[partition] = atomic_fetch_add(&buffer->h, 1);
       buffer->d[id] = 0;
+      //printf("Thread %zu has claimed a new chunk %zu for partition %zu\n", id, current_chunk[partition], partition);
     }
 
-    size_t offset = current_chunk[partition_id] * buffer->c + buffer->d[id];
+    size_t offset = current_chunk[partition] * buffer->c + buffer->d[id];
     buffer->tuples[offset] = *tuple;
     buffer->d[id]++;
-    printf("Thread %zu has written tuple no. %zu to partition %zu at offset %zu\n", id, i, partition_id, offset);
+    //printf("Thread %zu has written tuple %zu to partition %zu at offset %zu\n", id, id * n_tuples + i, partition, offset);
   }
 
-  // TODO:
-  // When done
-    // If the last chunk written by the thread is not full, we should top-up using earlier data.
-    // Specifically, move records from the first occupied chunk of this thread into the last occupied chunk.
-      // Either chunk j where j is thread is
-      // Or save first chunk in variable
+  /* TOP-UP PHASE */
+  for (size_t p = 0; p < n_partitions; p++) {
+    if (first_chunk[p] != current_chunk[p]) {
+      //printf("Thread %zu is top-upping partition %zu\n", id, p);
+      Buffer *buffer = &partitions[p].buffers[0];
+      if (buffer->d[id] < buffer->c) { 
+        size_t first_offset = first_chunk[p] * buffer->c;
+        size_t last_offset = current_chunk[p] * buffer->c + buffer->d[id];
+        size_t tuples_to_move = buffer->c - buffer->d[id];
+        for (size_t i = 0; i < tuples_to_move; i++) {
+          buffer->tuples[last_offset + i] = buffer->tuples[first_offset + i];
+          buffer->tuples[first_offset + i] = (Tuple){0}; // Clear the old position
+          //printf("Thread %zu has moved tuple %zu from chunk %zu / offset %zu to chunk %zu / offset %zu for partition %zu\n", id, id * n_tuples + i, first_chunk[p], first_offset + i, current_chunk[p], last_offset + i, p);
+        }
+      }
+    }
+  }
 
   free(current_chunk);
+  free(first_chunk);
   return NULL;
 }
 
-void partition(Partition *partitions, size_t n_partitions, Tuple *tuples, size_t n_tuples, size_t hash_bits, size_t n_threads) {
+void partition(Partition *partitions, size_t n_partitions, Tuple *tuples, 
+               size_t n_tuples, size_t hash_bits, size_t n_threads) {
+  pthread_t threads[n_threads];
 
-  size_t slice = n_tuples / n_threads; 
-  // TODO: change to other way, see concurrent
-  printf("Each thread will process %zu tuples\n", slice);
+  size_t tuples_per_thread = n_tuples / n_threads;
 
-  pthread_t *threads = malloc(n_threads * sizeof(pthread_t));
-  PartitionWorkerArgs *thread_args = malloc(n_threads * sizeof(PartitionWorkerArgs));
+  ThreadArgs *thread_args = malloc(n_threads * sizeof(ThreadArgs));
 
-  for (size_t i = 0; i < n_threads; i++) {
-    thread_args[i].id = i;
-    thread_args[i].partitions = partitions;
-    thread_args[i].n_partitions = n_partitions;
-    thread_args[i].tuples = tuples;
-    thread_args[i].start_of_slice = i * slice;
-    thread_args[i].end_of_slice = (i == n_threads - 1) ? n_tuples + 1 : (i + 1) * slice; // Last thread gets the rest
-    thread_args[i].hash_bits = hash_bits;
+  for (size_t t = 0; t < n_threads; t++) {
+    thread_args[t].id = t;
+    thread_args[t].partitions = partitions;
+    thread_args[t].n_partitions = n_partitions;
+    thread_args[t].tuples = &tuples[t * tuples_per_thread];
+    thread_args[t].n_tuples = tuples_per_thread;
+    thread_args[t].hash_bits = hash_bits;
 
-    pthread_create(&threads[i], NULL, partition_worker, &thread_args[i]);
+    pthread_create(&threads[t], NULL, partition_worker, &thread_args[t]);
   }
 
   for (size_t t = 0; t < n_threads; t++) {
     pthread_join(threads[t], NULL);
-    printf("Thread %zu finished\n", t);
   }
 
-  free(threads);
   free(thread_args);
 }
 
