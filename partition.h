@@ -7,10 +7,11 @@
 typedef struct {
   Tuple *tuples;
   size_t size;
-  size_t c;               // Chunk size
-  _Atomic size_t h;       // Next available chunk
-  size_t *d;              // How many tuples have been written to current chunk by each thread
-  _Atomic bool finalized; // Flag to indicate that all tuples have been processed. Maybe not needed.
+  size_t c;               // chunk size
+  _Atomic size_t h;       // next available chunk index
+  size_t *d;              // how many tuples have been written into the current chunk by thread i.
+  _Atomic bool finalized; // flag indicating the buffer has entered finalization
+  _Atomic size_t current_writing_index;
 } Buffer;
 
 typedef struct {
