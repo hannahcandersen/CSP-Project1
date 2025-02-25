@@ -5,7 +5,7 @@
 #include "partition.h"
 #include "hash.h"
 #define NO_CHUNK ((size_t)-1)
-#define CHUNK_SIZE 2 // TODO: Change to big number. How to find the optimal value?
+#define CHUNK_SIZE 1024 // TODO: How to find the optimal value?
 
 typedef struct {
   size_t id;
