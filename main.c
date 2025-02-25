@@ -40,6 +40,9 @@ int main(int argc, char **argv) {
 
   printf("Done partitioning\n");
 
+  // TODO: Make this faster
+  // Possibly parallelize
+  // Or maybe smarter index in checks
   if (verify_result) {
     printf("Verifying results...\n");
     for (size_t i = 0; i < n_tuples; i++) {
