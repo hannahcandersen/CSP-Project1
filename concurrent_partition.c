@@ -67,3 +67,12 @@ void partition(Partition *partitions, size_t n_partitions, Tuple *tuples,
 
   free(partition_args);
 }
+
+bool contains_tuple(Partition *partition, Tuple *tuple) {
+  for (size_t t = 0; t < partition->buffers->size; t++) {
+    if (tuple->key == partition->buffers->tuples[t].key)
+      return true;
+  }
+
+  return false;
+}
