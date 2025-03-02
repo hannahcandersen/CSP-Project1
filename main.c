@@ -57,5 +57,10 @@ int main(int argc, char **argv) {
     printf("Results verified\n");
   }
 
+  free_buffers(partitions, n_partitions, n_tuples, n_threads);
+
+  free(partitions);
+  free(tuples);
+
   return 0;
 }

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "tuple.h"
@@ -31,11 +32,14 @@ Tuple *read_tuples(char *filename, size_t *size) {
   for (size_t i = 0; i < *size; i++) {
     if (fscanf(file, "%llu,%llu\n", &key, &value) != 2) {
       printf("Couldn't parse tuple #%zu from file\n", i);
+      fclose(file);
       return NULL;
     }
     Tuple t = {key, value};
     tuples[i] = t;
   }
+
+  fclose(file);
 
   return tuples;
 }
