@@ -34,6 +34,14 @@ void make_buffers(Partition *partitions, size_t n_partitions, size_t n_tuples, s
   }
 }
 
+void free_buffers(Partition *partitions, size_t n_partitions, size_t n_tuples, size_t n_threads) {
+  for (size_t i = 0; i < n_threads; i++) {
+    free(partitions[i].buffers->tuples);
+    free(partitions[i].buffers->d);
+    free(partitions[i].buffers);
+  }
+}
+
 void *partition_worker(void *args)
 {
   ThreadArgs *t_args = args;
