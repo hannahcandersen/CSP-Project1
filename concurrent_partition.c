@@ -43,10 +43,11 @@ void *partition_part(void *args) {
   size_t n_tuples = p_args->n_tuples;
   size_t hash_bits = p_args->hash_bits;
 
-  for (int i = 0; i < n_tuples; i++) {
-    size_t partition = hash(&tuples[i], hash_bits);
-    size_t buffer_idx = atomic_fetch_add(&partitions[partition].buffers->current_writing_index, 1);
-    partitions[partition].buffers->tuples[buffer_idx] = tuples[i];
+  for (size_t i = 0; i < n_tuples; i++) {
+    Tuple *tuple = &tuples[i];
+    size_t partition = hash(tuple, hash_bits);
+    size_t write_idx = atomic_fetch_add(&partitions[partition].buffers->current_writing_index, 1);
+    partitions[partition].buffers->tuples[write_idx] = *tuple;
   }
 
   return NULL;
