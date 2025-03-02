@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
   size_t n_tuples;
   Tuple *tuples = read_tuples(tuple_filename, &n_tuples);
 
-  size_t different_thread_counts = 4;
+  size_t different_thread_counts = 6;
   size_t *n_threads = malloc(different_thread_counts * sizeof(size_t));
   for (size_t i = 0; i < different_thread_counts; i++) {
     n_threads[i] = pow(2.0, (double)i);
