@@ -21,6 +21,7 @@ void make_buffers(Partition *partitions, size_t n_partitions, size_t n_tuples,
 
     buffer->size = n_tuples / n_partitions * 2;
     buffer->tuples = malloc(buffer->size * sizeof(Tuple));
+    buffer->current_writing_index = 0;
 
     partitions[i].n_buffers = 1;
     partitions[i].buffers = buffer;
