@@ -29,7 +29,7 @@ def main():
             plt.plot(x, y, label=f"Threads: {key}")
 
         plt.xlabel("Hash Bits")
-        plt.ylabel("Thousands of Tuples per Second")
+        plt.ylabel("Millions of Tuples per Second")
 
         plt.ylim(0, 200)
 
