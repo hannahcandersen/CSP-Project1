@@ -5,13 +5,16 @@ import numpy as np
 import sys
 
 def main():
-    if len(sys.argv) < 3:
-        print("Please provide name of data file and number of tuples")
+    if len(sys.argv) < 4:
+        print("Wrong parameters")
         return
 
     filename = sys.argv[1]
     title = sys.argv[2]
     n_tuples = float(sys.argv[3])
+    save_fig = None
+    if len(sys.argv) == 6 and sys.argv[4] == "--save":
+        save_fig = sys.argv[5]
 
     with open(filename, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
@@ -34,8 +37,12 @@ def main():
         plt.ylim(0, 200)
 
         plt.legend()
-        plt.show()
         plt.title(f"{title} - 2^24 Tuples")
+
+        if save_fig is not None:
+            plt.savefig(save_fig)
+        else:
+            plt.show()
 
 if __name__ == "__main__":
     main()
