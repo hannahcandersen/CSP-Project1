@@ -39,6 +39,7 @@ def main():
         plt.ylabel("Millions of Tuples per Second")
 
         plt.ylim(0, 200)
+        plt.xticks([2 * x for x in range(0, 10)])
 
         plt.legend()
         plt.title(f"{title} - 2^24 Tuples")
