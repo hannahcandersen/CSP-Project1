@@ -30,8 +30,12 @@ def main():
 
         plt.xlabel("Hash Bits")
         plt.ylabel("Thousands of Tuples per Second")
+
+        plt.ylim(0, 200)
+
         plt.legend()
         plt.show()
+        plt.title(f"{title} - 2^24 Tuples")
 
 if __name__ == "__main__":
     main()
