@@ -10,7 +10,8 @@ def main():
         return
 
     filename = sys.argv[1]
-    n_tuples = float(sys.argv[2])
+    title = sys.argv[2]
+    n_tuples = float(sys.argv[3])
 
     with open(filename, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
