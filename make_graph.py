@@ -1,5 +1,6 @@
 from collections import defaultdict
 import csv
+from itertools import cycle
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
@@ -16,6 +17,9 @@ def main():
     if len(sys.argv) == 6 and sys.argv[4] == "--save":
         save_fig = sys.argv[5]
 
+
+    marker_cycle = cycle(['o', 's', '^', 'D', 'v', 'p', '*', 'x', '+'])
+
     with open(filename, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
 
@@ -29,7 +33,7 @@ def main():
         for key in xs.keys():
             x = np.array(xs[key])
             y = 1. / np.array(ys[key]) * n_tuples / 1000.
-            plt.plot(x, y, label=f"Threads: {key}")
+            plt.plot(x, y, label=f"Threads: {key}", marker=next(marker_cycle))
 
         plt.xlabel("Hash Bits")
         plt.ylabel("Millions of Tuples per Second")
