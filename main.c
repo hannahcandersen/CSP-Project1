@@ -1,4 +1,3 @@
-#include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -31,7 +30,7 @@ int main(int argc, char **argv) {
   size_t n_tuples;
   Tuple *tuples = read_tuples(filename, &n_tuples);
 
-  size_t n_partitions = pow(2.0, (double)hash_bits);
+  size_t n_partitions = 1 << hash_bits;
   Partition *partitions = (Partition *)malloc(n_partitions * sizeof(Partition));
 
   make_buffers(partitions, n_partitions, n_tuples, n_threads);

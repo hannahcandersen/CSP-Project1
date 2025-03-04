@@ -1,4 +1,3 @@
-#include <math.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,7 +39,7 @@ int main(int argc, char **argv) {
   size_t different_thread_counts = 6;
   size_t *n_threads = malloc(different_thread_counts * sizeof(size_t));
   for (size_t i = 0; i < different_thread_counts; i++) {
-    n_threads[i] = pow(2.0, (double)i);
+    n_threads[i] = 1 << i;
   }
 
   size_t different_hash_bits = 18;
@@ -52,7 +51,7 @@ int main(int argc, char **argv) {
   struct timespec start, finish;
 
   for (size_t b = 0; b < different_hash_bits; b++) {
-    size_t n_partitions = pow(2.0, (double)hash_bits[b]);
+    size_t n_partitions = 1 << hash_bits[b];
     Partition *partitions =
         (Partition *)malloc(n_partitions * sizeof(Partition));
 
