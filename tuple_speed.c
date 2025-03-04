@@ -9,6 +9,8 @@
 #include "partition.h"
 #include "tuple.h"
 
+#define N_TRIALS 8l
+
 int main(int argc, char **argv) {
   if (argc == 2 &&
       (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)) {
@@ -55,25 +57,29 @@ int main(int argc, char **argv) {
         (Partition *)malloc(n_partitions * sizeof(Partition));
 
     for (size_t t = 0; t < different_thread_counts; t++) {
-      // Allocate buffers
-      make_buffers(partitions, n_partitions, n_tuples, n_threads[t]);
+      long elapsed_time_ms = 0l;
 
-      // Time partition
-      clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-      partition(partitions, n_partitions, tuples, n_tuples, hash_bits[b],
-                n_threads[t]);
-      clock_gettime(CLOCK_MONOTONIC_RAW, &finish);
+      for (long i = 0; i < N_TRIALS; i++) {
+        // Allocate buffers
+        make_buffers(partitions, n_partitions, n_tuples, n_threads[t]);
 
-      long elapsed_time_ms = (finish.tv_sec - start.tv_sec) * 1000 +
-                             (finish.tv_nsec - start.tv_nsec) / 1000000;
-      printf("%zu, %zu: %lu ms\n", hash_bits[b], n_threads[t], elapsed_time_ms);
+        // Time partition
+        clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+        // TODO: Average of 8 trials
+        partition(partitions, n_partitions, tuples, n_tuples, hash_bits[b],
+                  n_threads[t]);
+        clock_gettime(CLOCK_MONOTONIC_RAW, &finish);
 
+        elapsed_time_ms += (finish.tv_sec - start.tv_sec) * 1000l +
+                           (finish.tv_nsec - start.tv_nsec) / 1000000l;
+
+        // Free buffers because they depend on threads in some
+        // implementations
+        free_buffers(partitions, n_partitions, n_tuples, n_threads[t]);
+      }
+      printf("%zu, %zu: %lu ms\n", hash_bits[b], n_threads[t], elapsed_time_ms / N_TRIALS);
       fprintf(results_file, "%zu,%zu,%ld\n", hash_bits[b], n_threads[t],
               elapsed_time_ms);
-
-      // Free buffers because they depend on threads in some
-      // implementations
-      free_buffers(partitions, n_partitions, n_tuples, n_threads[t]);
     }
 
     // Partitions depend on hash bits
