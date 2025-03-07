@@ -12,6 +12,7 @@ typedef struct {
   Tuple *tuples;
   size_t n_tuples;
   size_t hash_bits;
+  size_t core;
 } PartitionArgs;
 
 void make_buffers(Partition *partitions, size_t n_partitions, size_t n_tuples,
@@ -42,6 +43,17 @@ void *partition_part(void *args) {
   Tuple *tuples = p_args->tuples;
   size_t n_tuples = p_args->n_tuples;
   size_t hash_bits = p_args->hash_bits;
+  size_t core = p_args->core;
+
+  // Affinity defined in cmake file, to allow compiling with and without setting
+  // core affinity
+#ifdef AFFINITY
+  cpu_set_t mask;
+  CPU_ZERO(&mask);
+  CPU_SET(core, &mask);
+  int result = sched_setaffinity(
+      0, sizeof(mask), &mask); // 0 means current thread. Returns 0 on succes
+#endif
 
   for (size_t i = 0; i < n_tuples; i++) {
     Tuple *tuple = &tuples[i];
@@ -67,6 +79,11 @@ void partition(Partition *partitions, size_t n_partitions, Tuple *tuples,
     partition_args[t].tuples = &tuples[t * tuples_per_thread];
     partition_args[t].n_tuples = tuples_per_thread;
     partition_args[t].hash_bits = hash_bits;
+    partition_args[t].core =
+        t * 2 % 32 +
+        t / 16; // First fill first numa node, then use two nodes
+                // Designed for a processor with 32 threads and two numa nodes
+                // with even cores on one and odd on the other
 
     pthread_create(&threads[t], NULL, partition_part, &partition_args[t]);
   }
