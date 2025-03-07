@@ -64,7 +64,6 @@ int main(int argc, char **argv) {
 
         // Time partition
         clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-        // TODO: Average of 8 trials
         partition(partitions, n_partitions, tuples, n_tuples, hash_bits[b],
                   n_threads[t]);
         clock_gettime(CLOCK_MONOTONIC_RAW, &finish);
@@ -78,7 +77,7 @@ int main(int argc, char **argv) {
       }
       printf("%zu, %zu: %lu ms\n", hash_bits[b], n_threads[t], elapsed_time_ms / N_TRIALS);
       fprintf(results_file, "%zu,%zu,%ld\n", hash_bits[b], n_threads[t],
-              elapsed_time_ms);
+              elapsed_time_ms / N_TRIALS);
     }
 
     // Partitions depend on hash bits
