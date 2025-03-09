@@ -20,6 +20,14 @@ add_executable(parallelbuffers_tuple_timing tuple_speed.c parallelbuffers_partit
 
 add_executable(concurrent_tuple_timing_affinity tuple_speed.c concurrent_partition.c tuple.c hash.c)
 add_executable(parallelbuffers_tuple_timing_affinity tuple_speed.c parallelbuffers_partition.c tuple.c hash.c)
+
+add_executable(concurrent_tuple_timing_affinity_bad tuple_speed.c concurrent_partition.c tuple.c hash.c)
+add_executable(parallelbuffers_tuple_timing_affinity_bad tuple_speed.c parallelbuffers_partition.c tuple.c hash.c)
+
 # Add definitions to compile programs with to set core affinity
 target_compile_definitions(concurrent_tuple_timing_affinity PRIVATE AFFINITY _GNU_SOURCE)
 target_compile_definitions(parallelbuffers_tuple_timing_affinity PRIVATE AFFINITY _GNU_SOURCE)
+
+# Bad core affinity executables
+target_compile_definitions(concurrent_tuple_timing_affinity_bad PRIVATE AFFINITY BAD_AFFINITY _GNU_SOURCE)
+target_compile_definitions(parallelbuffers_tuple_timing_affinity_bad PRIVATE AFFINITY BAD_AFFINITY _GNU_SOURCE)
