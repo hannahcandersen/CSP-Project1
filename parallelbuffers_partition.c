@@ -6,7 +6,6 @@
 #include "partition.h"
 #include "hash.h"
 #define NO_CHUNK ((size_t)-1)
-#define CHUNK_SIZE 1024 // TODO: How to find the optimal value?
 
 typedef struct {
   size_t id;
@@ -24,7 +23,7 @@ void make_buffers(Partition *partitions, size_t n_partitions, size_t n_tuples, s
 
     buffer->size = n_tuples / n_partitions * 2;
     buffer->tuples = malloc(buffer->size * sizeof(Tuple));
-    buffer->c = CHUNK_SIZE; 
+    buffer->c = buffer->c = (n_tuples / n_partitions) / (n_threads * 2); // Size of partition / Chunks per thread
     buffer->h = 0;
     buffer->d = malloc(n_threads * sizeof(size_t));
     for (size_t j = 0; j < n_threads; j++) {
