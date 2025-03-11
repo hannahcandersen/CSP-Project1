@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <stdatomic.h>
+#include <math.h>
 
 #include "partition.h"
 #include "hash.h"
@@ -23,7 +24,7 @@ void make_buffers(Partition *partitions, size_t n_partitions, size_t n_tuples, s
 
     buffer->size = n_tuples / n_partitions * 2;
     buffer->tuples = malloc(buffer->size * sizeof(Tuple));
-    buffer->c = buffer->c = (n_tuples / n_partitions) / (n_threads * 2); // Size of partition / Chunks per thread
+    buffer->c = buffer->c = (n_tuples / n_partitions) / (n_threads * log2((double)(2 * n_threads))); // Size of partition / Chunks per thread
     buffer->h = 0;
     buffer->d = malloc(n_threads * sizeof(size_t));
     for (size_t j = 0; j < n_threads; j++) {

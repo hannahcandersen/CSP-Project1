@@ -23,3 +23,8 @@ add_executable(parallelbuffers_tuple_timing_affinity tuple_speed.c parallelbuffe
 # Add definitions to compile programs with to set core affinity
 target_compile_definitions(concurrent_tuple_timing_affinity PRIVATE AFFINITY _GNU_SOURCE)
 target_compile_definitions(parallelbuffers_tuple_timing_affinity PRIVATE AFFINITY _GNU_SOURCE)
+
+target_link_libraries(parallelbuffers m)
+target_link_libraries(parallelbuffers_affinity m)
+target_link_libraries(parallelbuffers_tuple_timing m)
+target_link_libraries(parallelbuffers_tuple_timing_affinity m)
