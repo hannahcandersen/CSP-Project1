@@ -132,12 +132,17 @@ void partition(Partition *partitions, size_t n_partitions, Tuple *tuples,
     thread_args[t].tuples = &tuples[t * tuples_per_thread];
     thread_args[t].n_tuples = tuples_per_thread;
     thread_args[t].hash_bits = hash_bits;
+#ifdef BAD_AFFINITY
+    thread_args[t].core = t; // For demonstratitive purposes
+                                // Used to show that crossing NUMA nodes hurts performance
+#else
     // NOTE: This is very specific to the CPU used in this project and probably doesn't work for other CPUs
     thread_args[t].core =
         t * 2 % 32 +
         t / 16; // First fill first numa node, then use two nodes
                 // Designed for a processor with 32 threads and two numa nodes
                 // with even cores on one and odd on the other
+#endif
 
     pthread_create(&threads[t], NULL, partition_worker, &thread_args[t]);
   }
