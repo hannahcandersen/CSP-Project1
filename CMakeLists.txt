@@ -14,6 +14,9 @@ add_executable(parallelbuffers_affinity main.c parallelbuffers_partition.c tuple
 target_compile_definitions(concurrent_affinity PRIVATE AFFINITY _GNU_SOURCE)
 target_compile_definitions(parallelbuffers_affinity PRIVATE AFFINITY _GNU_SOURCE)
 
+target_compile_definitions(concurrent_affinity_bad PRIVATE AFFINITY _GNU_SOURCE)
+target_compile_definitions(parallelbuffers_affinity_bad PRIVATE AFFINITY _GNU_SOURCE)
+
 # Performance measuring
 add_executable(concurrent_tuple_timing tuple_speed.c concurrent_partition.c tuple.c hash.c)
 add_executable(parallelbuffers_tuple_timing tuple_speed.c parallelbuffers_partition.c tuple.c hash.c)
@@ -29,5 +32,13 @@ target_compile_definitions(concurrent_tuple_timing_affinity PRIVATE AFFINITY _GN
 target_compile_definitions(parallelbuffers_tuple_timing_affinity PRIVATE AFFINITY _GNU_SOURCE)
 
 # Bad core affinity executables
+target_compile_definitions(concurrent_affinity_bad PRIVATE AFFINITY BAD_AFFINITY _GNU_SOURCE)
+target_compile_definitions(parallelbuffers_affinity_bad PRIVATE AFFINITY BAD_AFFINITY _GNU_SOURCE)
 target_compile_definitions(concurrent_tuple_timing_affinity_bad PRIVATE AFFINITY BAD_AFFINITY _GNU_SOURCE)
 target_compile_definitions(parallelbuffers_tuple_timing_affinity_bad PRIVATE AFFINITY BAD_AFFINITY _GNU_SOURCE)
+
+target_link_libraries(parallelbuffers m)
+target_link_libraries(parallelbuffers_affinity m)
+target_link_libraries(parallelbuffers_tuple_timing m)
+target_link_libraries(parallelbuffers_tuple_timing_affinity m)
+target_link_libraries(parallelbuffers_tuple_timing_affinity_bad m)

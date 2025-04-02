@@ -2,11 +2,11 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <stdatomic.h>
+#include <math.h>
 
 #include "partition.h"
 #include "hash.h"
 #define NO_CHUNK ((size_t)-1)
-#define CHUNK_SIZE 1024 // TODO: How to find the optimal value?
 
 typedef struct {
   size_t id;
@@ -24,7 +24,7 @@ void make_buffers(Partition *partitions, size_t n_partitions, size_t n_tuples, s
 
     buffer->size = n_tuples / n_partitions * 2;
     buffer->tuples = malloc(buffer->size * sizeof(Tuple));
-    buffer->c = CHUNK_SIZE; 
+    buffer->c = buffer->c = (n_tuples / n_partitions) / (n_threads * log2((double)(2 * n_threads))); // Size of partition / Chunks per thread
     buffer->h = 0;
     buffer->d = malloc(n_threads * sizeof(size_t));
     for (size_t j = 0; j < n_threads; j++) {
@@ -136,6 +136,7 @@ void partition(Partition *partitions, size_t n_partitions, Tuple *tuples,
     thread_args[t].core = t; // For demonstratitive purposes
                                 // Used to show that crossing NUMA nodes hurts performance
 #else
+    // NOTE: This is very specific to the CPU used in this project and probably doesn't work for other CPUs
     thread_args[t].core =
         t * 2 % 32 +
         t / 16; // First fill first numa node, then use two nodes
