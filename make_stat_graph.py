@@ -31,7 +31,6 @@ def main():
 
         for key in xs.keys():
             x = np.array(list(xs[key]))
-            print(list(ys[key].values()))
             y = 1 / 8 * np.array(list(ys[key].values())) # NOTE: Assumes 8 runs
             plt.plot(x, y, label=f"Threads: {key}", marker=next(marker_cycle))
 
