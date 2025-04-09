@@ -35,7 +35,6 @@ int main(int argc, char **argv) {
       instructions = 0;
     }
     while (fgetc(stats_file) != '\n' && !feof(stats_file));
-    printf("Instructions: %llu\n", instructions);
     if (!fscanf(stats_file, "%llu----cycles", &cycles)) {
       printf("Failed to read cycles for threads:%d,hash_bits:%d,run:%d\n",
              threads, hash_bits, run);
