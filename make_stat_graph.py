@@ -14,7 +14,7 @@ def main():
     stat = sys.argv[2]
     title = sys.argv[3]
     save_fig = None
-    if len(sys.argv) == 5 and sys.argv[4] == "--save":
+    if len(sys.argv) == 6 and sys.argv[4] == "--save":
         save_fig = sys.argv[5]
 
 
