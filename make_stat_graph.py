@@ -12,9 +12,10 @@ def main():
 
     filename = sys.argv[1]
     stat = sys.argv[2]
+    title = sys.argv[3]
     save_fig = None
-    if len(sys.argv) == 5 and sys.argv[3] == "--save":
-        save_fig = sys.argv[4]
+    if len(sys.argv) == 5 and sys.argv[4] == "--save":
+        save_fig = sys.argv[5]
 
 
     marker_cycle = cycle(['o', 's', '^', 'D', 'v', 'p', '*', 'x', '+'])
@@ -42,7 +43,7 @@ def main():
         plt.xticks([2 * x for x in range(0, 10)])
 
         plt.legend()
-        plt.title("Pretty graph")
+        plt.title(title)
 
         if save_fig is not None:
             plt.savefig(save_fig)
